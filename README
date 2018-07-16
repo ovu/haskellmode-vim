@@ -201,7 +201,17 @@ CONTENTS                                                         *haskellmode*
     file for the subdirectories 'libraries', 'Cabal', 'users_guide', etc.:
 >
         :let g:haddock_docdir="/usr/local/share/doc/ghc/html/"
-<
+
+                                                         g:haddock_browser_url
+
+   When hosting the help files locally running a file server, e.g
+   simpleserver. When setting this variable the documentation will be opened in
+   the browser using this url. An advantage of self hosting help files is that
+   the fragment of the url is used to point exactly the place in the
+   documentation where the description of document item is found.
+
+        :let g:haddock_browser_url="http://localhost:8000/"
+
                                                       *g:haddock_indexfiledir*
     The information gathered from Haddock's index files will be stored in a
     file called 'haddock_index.vim' in a directory derived from the Haddock

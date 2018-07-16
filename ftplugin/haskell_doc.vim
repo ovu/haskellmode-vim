@@ -72,7 +72,7 @@ if !haskellmode#GHC() | finish | endif
 if (!exists("g:ghc_pkg") || !executable(g:ghc_pkg))
   let g:ghc_pkg = substitute(g:ghc,'\(.*\)ghc','\1ghc-pkg','')
 endif
-
+" echo g:haddock_docdir
 if exists("g:haddock_docdir") && isdirectory(g:haddock_docdir)
   let s:docdir = g:haddock_docdir
 elseif executable(g:ghc_pkg)
@@ -116,7 +116,8 @@ endif
 " todo: can we turn s:docdir into a list of paths, and
 " include docs for third-party libs as well?
 
-let s:libraries         = s:docdir . 'libraries/'
+" let s:libraries         = s:docdir . 'libraries/'
+let s:libraries         = s:docdir . 'doc/'
 let s:guide             = s:docdir . 'users_guide/'
 let s:index             = 'index.html'
 if exists("g:haddock_indexfiledir") && filewritable(g:haddock_indexfiledir)
@@ -171,17 +172,25 @@ function! DocSettings()
 endfunction
 
 function! DocBrowser(url)
-  "echomsg "DocBrowser(".url.")"
+  let url = a:url
+  if (exists("g:haddock_browser_url"))
+    " Replace original url starting with file:/// to point to the browser url
+    let url = substitute(a:url, g:haddock_docdir . "doc/./", g:haddock_browser_url, "")
+  endif
+  " echomsg "DocBrowser(".a:url.")"
+  " echomsg "DocBrowser(".url.")"
   if (!exists("g:haddock_browser") || !executable(g:haddock_browser))
     echoerr s:scriptname." can't find documentation browser. please set g:haddock_browser"
     return
   endif
   " start browser to open url, according to specified format
-  let url = a:url=~'^\(file://\|http://\)' ? a:url : 'file://'.a:url
+  let urlToOpen = url=~'^\(file://\|http://\)' ? url : 'file://'.a:url
   if (exists("g:haddock_browser_nosilent") && g:haddock_browser_nosilent)
-    exe '!'.printf(g:haddock_browser_callformat,g:haddock_browser,escape(url,'#%')) 
+    " echomsg printf(g:haddock_browser_callformat,g:haddock_browser,escape(urlToOpen,'#%')) 
+    exe '!'.printf(g:haddock_browser_callformat,g:haddock_browser,escape(urlToOpen,'#%')) 
   else
-    silent exe '!'.printf(g:haddock_browser_callformat,g:haddock_browser,escape(url,'#%')) 
+    " echomsg printf(g:haddock_browser_callformat,g:haddock_browser,escape(urlToOpen,'#%')) 
+    silent exe '!'.printf(g:haddock_browser_callformat,g:haddock_browser,escape(urlToOpen,'#%')) 
   endif
   redraw!
 endfunction
@@ -603,8 +612,11 @@ function! Haddock()
     endfor
     popup ]Popup
   else
+    for key in keys
+      echo key
+    endfor
     let s:choices = keys
-    let key = input('browse docs for '.name.' in: ','','customlist,CompleteAux')
+    let key = input('Press TAB for selecting docs for '.name.':','','customlist,CompleteAux')
     if key!=''
       call DocBrowser(dict[key])
     endif
